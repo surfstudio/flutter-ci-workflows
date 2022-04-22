@@ -1,0 +1,133 @@
+name: "Publish to pub.dev"
+
+env:
+  PUBSPEC_PATH: './pubspec.yaml'
+  CHANGELOG_PATH: './CHANGELOG.md'
+
+on:
+  workflow_call:
+    inputs:
+      PANA_TOTAL:
+        type: string
+        required: true
+    secrets:
+      CREDENTIAL_JSON:
+        required: true
+      OAUTH_ACCESS_TOKEN:
+        required: true
+      OAUTH_REFRESH_TOKEN:
+        required: true
+
+jobs:
+  check_versions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Get tag
+        run: |
+          echo "TAG=$(git describe --tags --abbrev=0 --exact-match --match 'v*' HEAD | cut -c 2-)" >> $GITHUB_ENV
+
+      - name: Tag is empty
+        if: ${{ env.TAG == ''}}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            core.setFailed('Tag not found!')
+
+      - name: Echo tag
+        run: |
+          echo "TAG: ${{ env.TAG }}"
+
+      - name: Get pubspec version
+        run: |
+          echo "PUBSPEC_VERSION=$(cat $PUBSPEC_PATH | grep -o 'version:[^:]*' | cut -f2 -d":" | xargs)" >> $GITHUB_ENV
+
+      - name: Pubspec version is empty
+        if: ${{ env.PUBSPEC_VERSION == ''}}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            core.setFailed('Pubspec version not found!')
+
+      - name: Echo pubspec version
+        run: |
+          echo "Pubspec version: ${{ env.PUBSPEC_VERSION }}"
+
+      - name: Get changelog version
+        run: |
+          echo "CHANGELOG_VERSION=$(cat $CHANGELOG_PATH | grep -o '## [^:]*' -m '1' | cut -c '4-' | xargs)" >> $GITHUB_ENV
+
+      - name: Changelog version is empty
+        if: ${{ env.CHANGELOG_VERSION == ''}}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            core.setFailed('Changelog version not found!')
+
+      - name: Echo changelog version
+        run: |
+          echo "Changelog version: ${{ env.CHANGELOG_VERSION }}"
+
+      - name: Compare versions failed
+        if: "!contains(env.PUBSPEC_VERSION, env.TAG) && !contains(env.CHANGELOG_VERSION, env.TAG)"
+        run: |
+          echo "TAG: ${{ env.TAG }}"
+          echo "CHANGELOG: ${{ env.CHANGELOG_VERSION }}"
+          echo "PUBSPEC: ${{ env.PUBSPEC_VERSION }}"
+          echo "::error::The versions don't match!"
+          exit 1
+
+      - name: Compare versions succes
+        run: |
+          echo "TAG: ${{ env.TAG }}"
+          echo "CHANGELOG: ${{ env.CHANGELOG_VERSION }}"
+          echo "PUBSPEC: ${{ env.PUBSPEC_VERSION }}"
+
+  pana:
+    needs: check_versions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Repository
+        uses: actions/checkout@v2.3.5
+
+      - name: Set up Dart
+        uses: dart-lang/setup-dart@v1.3
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v1
+        with:
+          channel: "stable"
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Install dependencies
+        run: |
+          dart pub get
+          dart pub global activate pana
+
+      - name: Verify pub score
+        run: |
+          PANA=$(pana . --no-warning); PANA_SCORE=$(echo $PANA | sed -n "s/.*Points: \([0-9]*\)\/\([0-9]*\)./\1\/\2/p")
+          echo "score: $PANA_SCORE"
+          IFS='/'; read -a SCORE_ARR <<< "$PANA_SCORE"; SCORE=SCORE_ARR[0]; TOTAL=SCORE_ARR[1]
+          if [ -z "$1" ]; then MINIMUM_SCORE=${{ inputs.PANA_TOTAL }}; else MINIMUM_SCORE=$1; fi
+          if (( $SCORE < $MINIMUM_SCORE )); then echo "Minimum score $MINIMUM_SCORE was not met!"; exit 1; fi
+
+  package-publishing:
+    needs: [ check_versions, pana ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v2
+
+      - name: '>> Flutter package <<'
+        uses: k-paxian/dart-package-publisher@master
+        with:
+          credentialJson: ${{ secrets.CREDENTIAL_JSON }}
+          accessToken: ${{ secrets.OAUTH_ACCESS_TOKEN }}
+          refreshToken: ${{ secrets.OAUTH_REFRESH_TOKEN }}
+          flutter: true
+          dryRunOnly: false
