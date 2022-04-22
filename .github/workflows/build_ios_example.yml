@@ -1,0 +1,25 @@
+name: "Build ios example"
+
+on: [ workflow_call ]
+
+jobs:
+  build_ios_example:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v1
+        with:
+          channel: "stable"
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build iOS
+        run: |
+          cd example
+          flutter pub get
+          flutter build ios --release --no-codesign
