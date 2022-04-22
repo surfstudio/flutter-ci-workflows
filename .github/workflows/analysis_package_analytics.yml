@@ -1,4 +1,4 @@
-name: "Analysis package Analytics"
+name: "Analysis for package Analytics"
 
 on:
   workflow_call:
