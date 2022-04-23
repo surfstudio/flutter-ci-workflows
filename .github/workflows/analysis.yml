@@ -2,12 +2,6 @@ name: "Analysis"
 
 on: [ workflow_call ]
 
-#on:
-#  workflow_call:
-#    secrets:
-#      GITHUB_TOKEN:
-#        required: true
-
 jobs:
   analysis:
     runs-on: ubuntu-latest

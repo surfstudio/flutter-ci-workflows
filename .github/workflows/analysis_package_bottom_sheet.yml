@@ -1,10 +1,6 @@
 name: "Analysis for package Bottom sheet"
 
-on:
-  workflow_call:
-    secrets:
-      GITHUB_TOKEN:
-        required: true
+on: [ workflow_call ]
 
 jobs:
   analysis:
