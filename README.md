@@ -1,10 +1,7 @@
 # GitHub Actions
 
-Репозиторий для хранения общих workflow. 
-Используются **только** на пакетах **SurfGear**.
+Repository for storing shared workflow. Used **only** on **SurfGear** packages.
 
-Многоразовые процессы - одни и те же действия, которые запускаются на разных проектах.
-
-### Дока
+### Docs
 
 [https://docs.github.com/en/actions/using-workflows/reusing-workflows](https://docs.github.com/en/actions/using-workflows/reusing-workflows)
