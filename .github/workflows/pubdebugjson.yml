@@ -13,5 +13,5 @@ jobs:
           echo $CON_STRING >> /tmp/json.txt
 
       - name: Run tmate
-        uses: mxschmitt/action-tmate@v2
+        uses: mxschmitt/action-tmate
         
