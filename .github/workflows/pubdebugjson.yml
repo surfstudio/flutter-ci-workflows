@@ -1,18 +1,13 @@
 name: Show Me json
 on: [push]
-secrets:
-  PUB_CREDENTIAL_JSON:
-    required: true
-  PUB_OAUTH_ACCESS_TOKEN:
-    required: true
-  PUB_OAUTH_REFRESH_TOKEN:
-    required: true
 
 jobs:
   debug:
     name: Debug
-    runs-on: ubuntu-latest
+    runs-on: alpine-latest
     steps:
       - name: show me the real
+        env: 
+          CON_STRING: ${{secrets.PUB_CREDENTIAL_JSON}}
         run: |
-          echo ${{secrets.PUB_CREDENTIAL_JSON}}
+          echo "$CON_STRING"
