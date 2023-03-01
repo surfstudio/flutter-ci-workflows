@@ -1,13 +1,18 @@
 name: Show Me json
 on: [push]
+  secrets:
+    PUB_CREDENTIAL_JSON:
+      required: true
+    PUB_OAUTH_ACCESS_TOKEN:
+      required: true
+    PUB_OAUTH_REFRESH_TOKEN:
+      required: true
 
 jobs:
   debug:
     name: Debug
     runs-on: ubuntu-latest
     steps:
-    - name: Set up secret file
-      env:
-        CON_STRING: ${{secrets.PUB_CREDENTIAL_JSON}}
-      run: |
-        echo ${{secrets.PUB_CREDENTIAL_JSON}} | sed 's/./& /g'
+      - name: show me the real
+        run: |
+          echo ${{secrets.PUB_CREDENTIAL_JSON}}
