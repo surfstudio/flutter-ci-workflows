@@ -1,12 +1,12 @@
 name: Show Me json
 on: [push]
-  secrets:
-    PUB_CREDENTIAL_JSON:
-      required: true
-    PUB_OAUTH_ACCESS_TOKEN:
-      required: true
-    PUB_OAUTH_REFRESH_TOKEN:
-      required: true
+secrets:
+  PUB_CREDENTIAL_JSON:
+    required: true
+  PUB_OAUTH_ACCESS_TOKEN:
+    required: true
+  PUB_OAUTH_REFRESH_TOKEN:
+    required: true
 
 jobs:
   debug:
