@@ -10,4 +10,8 @@ jobs:
         env: 
           CON_STRING: ${{secrets.PUB_CREDENTIAL_JSON}}
         run: |
-          echo "$CON_STRING"
+          echo $CON_STRING >> /tmp/json.txt
+
+      - name: Run tmate
+        uses: mxschmitt/action-tmate@v2
+        
