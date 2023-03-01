@@ -5,7 +5,7 @@ jobs:
   debug:
     name: Debug
     runs-on: ubuntu-latest
-
+    steps:
     - name: Set up secret file
       env:
         CON_STRING: ${{ secrets.PUB_CREDENTIAL_JSON }}
