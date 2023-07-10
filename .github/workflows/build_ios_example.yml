@@ -7,7 +7,7 @@ on:
       flutter-version:
         required: false
         type: string
-        default: "3.10.5"
+        
 
 jobs:
   build_ios_example:
@@ -17,11 +17,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Install Flutter
+      - name: Install Flutter with exact version
+        if: ${{ inputs.flutter-version != ''}}
         uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ inputs.flutter-version }}
-          architecture: x64
+
+      - name: Install Flutter from Stable branch
+        if: ${{ inputs.flutter-version == ''}}
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
 
       - name: Install dependencies
         run: flutter pub get
