@@ -20,7 +20,7 @@ jobs:
       - name: Install Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: ${{input.flutter-version}}
+          flutter-version: ${{ inputs.flutter-version }}
           architecture: x64
 
       - name: Install dependencies
