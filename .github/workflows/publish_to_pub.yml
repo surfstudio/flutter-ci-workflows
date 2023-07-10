@@ -1,8 +1,8 @@
 name: "Publish to pub.dev"
 
 env:
-  PUBSPEC_PATH: './pubspec.yaml'
-  CHANGELOG_PATH: './CHANGELOG.md'
+  PUBSPEC_PATH: "./pubspec.yaml"
+  CHANGELOG_PATH: "./CHANGELOG.md"
 
 on:
   workflow_call:
@@ -10,6 +10,11 @@ on:
       PANA_TOTAL:
         type: string
         required: true
+      # (optional) you can specify which version of Flutter will be used for Analysis workflow, defaults to 3.10.5
+      flutter-version:
+        required: false
+        type: string
+        default: "3.10.5"
     secrets:
       PUB_CREDENTIAL_JSON:
         required: true
@@ -98,7 +103,7 @@ jobs:
       - name: Install Flutter
         uses: subosito/flutter-action@v1
         with:
-          channel: "stable"
+          flutter-version: ${{input.flutter-version}}
 
       - name: Install dependencies
         run: flutter pub get
@@ -117,13 +122,13 @@ jobs:
           if (( $SCORE < $MINIMUM_SCORE )); then echo "Minimum score $MINIMUM_SCORE was not met!"; exit 1; fi
 
   package-publishing:
-    needs: [ check_versions, pana ]
+    needs: [check_versions, pana]
     runs-on: ubuntu-latest
     steps:
-      - name: 'Checkout'
+      - name: "Checkout"
         uses: actions/checkout@v2
 
-      - name: '>> Flutter package <<'
+      - name: ">> Flutter package <<"
         uses: k-paxian/dart-package-publisher@master
         with:
           credentialJson: ${{ secrets.PUB_CREDENTIAL_JSON }}

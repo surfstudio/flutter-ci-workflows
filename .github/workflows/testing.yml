@@ -5,7 +5,12 @@ on:
     secrets:
       CODECOV_TOKEN:
         required: true
-
+    input:
+      # (optional) you can specify which version of Flutter will be used for Analysis workflow, defaults to 3.10.5
+      flutter-version:
+        required: false
+        type: string
+        default: "3.10.5"
 jobs:
   testing:
     runs-on: ubuntu-latest
@@ -17,7 +22,7 @@ jobs:
       - name: Install Flutter
         uses: subosito/flutter-action@v1
         with:
-          channel: "stable"
+          flutter-version: ${{input.flutter-version}}
 
       - name: Install dependencies
         run: flutter pub get
