@@ -2,7 +2,7 @@ name: "Analysis"
 
 on:
   workflow_call:
-    input:
+    inputs:
       # (optional) you can specify which version of Flutter will be used for Analysis workflow, defaults to 3.10.5
       flutter-version:
         required: false
