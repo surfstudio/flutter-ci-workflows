@@ -1,6 +1,12 @@
 name: "Run example app"
 
-on: [ workflow_call ]
+on:
+  workflow_call:
+    inputs:
+      # (optional) you can specify which version of Flutter will be used for Analysis workflow, defaults to 3.10.5
+      flutter-version:
+        required: false
+        type: string
 
 jobs:
   run_example_app:
@@ -10,8 +16,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Install Flutter
-        uses: subosito/flutter-action@v1
+      - name: Install Flutter with exact version
+        if: ${{ inputs.flutter-version != ''}}
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ inputs.flutter-version }}
+
+      - name: Install Flutter from Stable branch
+        if: ${{ inputs.flutter-version == ''}}
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
 
       - name: Install dependencies
         run: flutter pub get
