@@ -43,6 +43,7 @@ jobs:
           # Check for the absence of 'access_token' field in the response
           if ! echo "$response" | jq -e '.access_token' > /dev/null; then
             echo "Error in API request. Response: $response"
+            exit 1
           else
             token=$(echo "$response" | jq -r '.access_token')
             echo "TOKEN=$token" >> $GITHUB_ENV
@@ -80,6 +81,7 @@ jobs:
           # Check for the absence of 'task' field in the response
           if ! echo "$response" | jq -e '.task' > /dev/null; then
             echo "Error in API request. Response: $response"
+            exit 1
           else
             echo "Task created successfully."
           fi
