@@ -1,0 +1,87 @@
+name: "Create Pyrus task from issue"
+
+on:
+  workflow_call:
+    inputs:
+      PACKAGE_NAME:
+        type: string
+        required: true
+      ISSUE_TITLE:
+        type: string
+        required: true
+      ISSUE_BODY:
+        type: string
+        required: true
+      ISSUE_LINK:
+        type: string
+        required: true
+    secrets:
+      LOGIN:
+        required: true
+      SECURITY_KEY:
+        required: true
+
+jobs:
+  create-pyrus-task:
+    runs-on: ubuntu-latest
+    env:
+      LOGIN: ${{ secrets.LOGIN }}
+      SECURITY_KEY: ${{ secrets.SECURITY_KEY }}
+    steps:
+      - id: auth
+        run: |
+          # Authorization with receiving a token
+          response=$(curl -X POST \
+          https://api.pyrus.com/v4/auth \
+          -H 'Content-Type: application/json' \
+          -d '{
+            "login": "'"$LOGIN"'",
+            "security_key": "'"$SECURITY_KEY"'"
+            }'
+          )
+
+          # Check for the absence of 'access_token' field in the response
+          if ! echo "$response" | jq -e '.access_token' > /dev/null; then
+            echo "Error in API request. Response: $response"
+            exit 1
+          else
+            token=$(echo "$response" | jq -r '.access_token')
+            echo "TOKEN=$token" >> $GITHUB_ENV
+            echo "Token received successfully."
+          fi
+      - id: create-task
+        run: |
+          # Creating a task in Pyrus
+          response=$(curl -X POST \
+          https://api.pyrus.com/v4/tasks \
+          -H 'Content-Type: application/json' \
+          -H "Authorization: Bearer $TOKEN" \
+          -d '{
+            "form_id": "1377048",
+            "fields": [
+              {
+                "id": "1",
+                "value": "${{ inputs.PACKAGE_NAME }}"
+              },
+              {
+                "id": "3",
+                "value": "${{ inputs.ISSUE_TITLE }}"
+              },
+              {
+                "id": "4",
+                "value": "${{ inputs.ISSUE_BODY }}"
+              },
+              {
+                "id": "5",
+                "value": "${{ inputs.ISSUE_LINK }}"
+              }
+            ]
+          }')
+
+          # Check for the absence of 'task' field in the response
+          if ! echo "$response" | jq -e '.task' > /dev/null; then
+            echo "Error in API request. Response: $response"
+            exit 1
+          else
+            echo "Task created successfully."
+          fi
