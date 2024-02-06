@@ -26,8 +26,8 @@ jobs:
       - id: getLength
         run: |
           PREPARED_TITLE=$(echo $TITLE | sed 's/ //g; s/\[bug\]//; s/\[Bug\]//; s/\[BUG\]//')
-          echo "::set-output name=title_length::${#PREPARED_TITLE}"
-          echo "::set-output name=body_length::${#BODY}"
+          echo "title_length=${#PREPARED_TITLE}" >> "$GITHUB_OUTPUT"
+          echo "body_length=${#BODY}" >> "$GITHUB_OUTPUT"
 
   check-issue:
     needs: get-length
