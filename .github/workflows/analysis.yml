@@ -62,7 +62,7 @@ jobs:
           dart pub global activate dependency_validator
           dart pub global run dependency_validator:dependency_validator
 
-      - name: Install dependencies and generate example localization files for example
+      - name: Install dependencies and generate localization files for example
         run: cd example && flutter pub get && cd ..
 
       - name: Run analyzer
