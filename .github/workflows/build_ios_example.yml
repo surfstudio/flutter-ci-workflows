@@ -3,7 +3,7 @@ name: "Build ios example"
 on:
   workflow_call:
     inputs:
-      # (optional) you can specify which version of Flutter will be used for Analysis workflow, defaults to 3.10.5
+      # (optional) you can specify which version of Flutter will be used for Analysis workflow, defaults is the latest release from stable channel
       flutter-version:
         required: false
         type: string
@@ -14,7 +14,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Install Flutter with exact version
         if: ${{ inputs.flutter-version != ''}}
