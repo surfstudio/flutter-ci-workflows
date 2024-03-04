@@ -7,7 +7,7 @@ on:
       flutter-version:
         required: false
         type: string
-        
+
 jobs:
   build_android_example:
     runs-on: ubuntu-latest

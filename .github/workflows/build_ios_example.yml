@@ -7,7 +7,6 @@ on:
       flutter-version:
         required: false
         type: string
-        
 
 jobs:
   build_ios_example:

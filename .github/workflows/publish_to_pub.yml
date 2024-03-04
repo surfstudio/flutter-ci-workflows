@@ -75,7 +75,7 @@ jobs:
           echo "Changelog version: ${{ env.CHANGELOG_VERSION }}"
 
       - name: Compare versions failed
-        if: "!contains(env.PUBSPEC_VERSION, env.TAG) && !contains(env.CHANGELOG_VERSION, env.TAG)"
+        if: ${{ !contains(env.PUBSPEC_VERSION, env.TAG) && !contains(env.CHANGELOG_VERSION, env.TAG) }}
         run: |
           echo "TAG: ${{ env.TAG }}"
           echo "CHANGELOG: ${{ env.CHANGELOG_VERSION }}"
