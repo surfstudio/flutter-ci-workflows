@@ -6,7 +6,7 @@ on:
       CODECOV_TOKEN:
         required: true
     inputs:
-      # (optional) you can specify which version of Flutter will be used for Analysis workflow, defaults to 3.10.5
+      # (optional) you can specify which version of Flutter will be used for Analysis workflow, defaults is the latest release from stable channel
       flutter-version:
         required: false
         type: string
@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Install Flutter with exact version
         if: ${{ inputs.flutter-version != ''}}
@@ -35,9 +35,14 @@ jobs:
         run: flutter pub get
 
       - name: Run tests
-        env:
-          CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
-        if: success()
+        if: ${{ success() }}
         run: |
           flutter test --coverage
-          bash <(curl -s https://codecov.io/bash) -f coverage/lcov.info
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          fail_ci_if_error: true
+          files: ./coverage/lcov.info
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

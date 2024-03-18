@@ -3,18 +3,18 @@ name: "Build android example"
 on:
   workflow_call:
     inputs:
-      # (optional) you can specify which version of Flutter will be used for Analysis workflow, defaults to 3.10.5
+      # (optional) you can specify which version of Flutter will be used for Analysis workflow, defaults is the latest release from stable channel
       flutter-version:
         required: false
         type: string
-        
+
 jobs:
   build_android_example:
     runs-on: ubuntu-latest
 
     steps:
       # Setup Java environment in order to build the Android app.
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - uses: actions/setup-java@v1
         with:
           java-version: "12.x"

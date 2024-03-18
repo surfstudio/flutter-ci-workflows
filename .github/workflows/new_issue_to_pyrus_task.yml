@@ -22,13 +22,15 @@ on:
         required: true
 
 jobs:
-  create-pyrus-task:
+  create_pyrus_task_from_issue:
+    name: Create Pyrus task from issue
     runs-on: ubuntu-latest
     env:
       LOGIN: ${{ secrets.LOGIN }}
       SECURITY_KEY: ${{ secrets.SECURITY_KEY }}
     steps:
-      - id: auth
+      - name: Authorization with receiving a token
+        id: auth
         run: |
           # Authorization with receiving a token
           response=$(curl -X POST \
@@ -49,7 +51,8 @@ jobs:
             echo "TOKEN=$token" >> $GITHUB_ENV
             echo "Token received successfully."
           fi
-      - id: create-task
+      - name: Creating a task in Pyrus
+        id: create-task
         run: |
           # Creating a task in Pyrus
           response=$(curl -X POST \
