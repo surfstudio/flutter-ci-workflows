@@ -1,0 +1,29 @@
+name: Add comment to issue or PR
+
+on:
+  workflow_call:
+    inputs:
+      # Number of the issue or PR
+      ISSUE_NUMBER:
+        type: number
+        required: true
+      COMMENT_TEXT:
+        type: string
+        required: true
+      # (optional) GitHub reactions: +1, -1, laugh, confused, heart, hooray, rocket, eyes
+      REACTIONS:
+          type: string
+          required: false
+
+jobs:
+  add_comment:
+    name: Add comment to issue or PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ inputs.ISSUE_NUMBER }}
+          body: ${{ inputs.COMMENT_TEXT }}
+          reactions: ${{ inputs.REACTIONS }}
+

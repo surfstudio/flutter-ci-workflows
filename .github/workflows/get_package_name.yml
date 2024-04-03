@@ -3,7 +3,7 @@ name: Get package name
 on:
   workflow_call:
     outputs:
-      package_name:
+      PACKAGE_NAME:
         value: ${{ jobs.get_package_name.outputs.package_name }}
 
 jobs:
@@ -15,6 +15,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Parsing pubspec.yaml
         id: parse_pubspec
         uses: actions-tools/yaml-outputs@v2

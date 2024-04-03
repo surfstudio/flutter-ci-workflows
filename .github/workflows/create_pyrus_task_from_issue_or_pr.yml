@@ -1,29 +1,29 @@
-name: "Create Pyrus task from issue or PR"
+name: Create Pyrus task from issue or PR
 
 on:
   workflow_call:
     inputs:
-      # Тип: issue или PR
+      # Issue or PR
       TYPE:
         type: string
         required: true
-      # Название пакета
       PACKAGE_NAME:
         type: string
         required: true
-      # Заголовок issue или PR
       TITLE:
         type: string
         required: true
-      # Тело issue или PR
       BODY:
         type: string
         required: true
-      # Ссылка на issue или PR
       LINK:
         type: string
         required: true
-    # Креды Pyrus бота, который будет создавать задачи
+    outputs:
+      # Pyrus task ID which was created
+      TASK_ID:
+        value: ${{ jobs.create_pyrus_task.outputs.task_id }}
+    # Authentication data for Pyrus bot which will create tasks
     secrets:
       LOGIN:
         required: true
@@ -31,17 +31,18 @@ on:
         required: true
 
 jobs:
-  create_pyrus_task_from_issue:
+  create_pyrus_task:
     name: Create Pyrus task from issue or PR
     runs-on: ubuntu-latest
+    outputs:
+      task_id: ${{ steps.create_task.outputs.task_id }}
     env:
       LOGIN: ${{ secrets.LOGIN }}
       SECURITY_KEY: ${{ secrets.SECURITY_KEY }}
     steps:
-      - name: Authorization with receiving a token
+      - name: Authentication with receiving a token
         id: auth
         run: |
-          # Authorization with receiving a token
           response=$(curl -X POST \
           https://api.pyrus.com/v4/auth \
           -H 'Content-Type: application/json' \
@@ -60,10 +61,10 @@ jobs:
             echo "TOKEN=$token" >> $GITHUB_ENV
             echo "Token received successfully."
           fi
-      - name: Creating a task in Pyrus
-        id: create-task
+
+      - name: Creating a Pyrus task
+        id: create_task
         run: |
-          # Creating a task in Pyrus
           response=$(curl -X POST \
           https://api.pyrus.com/v4/tasks \
           -H 'Content-Type: application/json' \
@@ -71,6 +72,10 @@ jobs:
           -d '{
             "form_id": "1377048",
             "fields": [
+              {
+                "id": "9",
+                "value": "${{ inputs.TYPE }}"
+              },
               {
                 "id": "1",
                 "value": "${{ inputs.PACKAGE_NAME }}"
@@ -86,10 +91,6 @@ jobs:
               {
                 "id": "5",
                 "value": "${{ inputs.LINK }}"
-              },
-              {
-                "id": "9",
-                "value": "${{ inputs.TYPE }}"
               }
             ]
           }')
@@ -99,5 +100,7 @@ jobs:
             echo "Error in API request. Response: $response"
             exit 1
           else
+            id=$(echo "$response" | jq -r '.task.id')
+            echo "task_id=$id" >> $GITHUB_OUTPUT
             echo "Task created successfully."
           fi

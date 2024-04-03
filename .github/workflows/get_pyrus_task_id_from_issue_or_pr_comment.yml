@@ -1,0 +1,37 @@
+name: Get Pyrus task ID from comment in issue or PR
+
+on:
+  workflow_call:
+    inputs:
+      # The issue or PR number from which the task was created in Pyrus
+      ISSUE_NUMBER:
+        type: number
+        required: true
+    outputs:
+      PYRUS_TASK_ID:
+        value: ${{ jobs.get_pyrus_task_id.outputs.pyrus_task_id }}
+
+jobs:
+  get_pyrus_task_id:
+    name: Get Pyrus task ID
+    runs-on: ubuntu-latest
+    outputs:
+      pyrus_task_id: ${{ steps.get_pyrus_task_id.outputs.task_id }}
+    steps:
+      - name: Find Comment
+        id: find_comment
+        uses: peter-evans/find-comment@v3
+        with:
+          issue-number: ${{ inputs.ISSUE_NUMBER }}
+          # This link text is used in issue/PR comments when creating a task in Pyrus.
+          # If the task was closed and reopened, then the task number will be taken from
+          # the last comment that was added during the task creation flow in Pyrus.
+          body-includes: https://pyrus.com/t#id
+          direction: last
+
+      - name: Get Pyrus task ID
+        id: get_pyrus_task_id
+        # If the comment is not found, then an empty string will be returned
+        run: |
+          id=$(echo "${{ steps.find_comment.outputs.comment-body }}" | grep -oP '#id\K\d+')
+          echo "task_id=$id" >> $GITHUB_OUTPUT

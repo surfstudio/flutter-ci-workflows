@@ -1,20 +1,16 @@
-name: "Create Pyrus task from issue"
+name: Add comment to Pyrus task
 
 on:
   workflow_call:
     inputs:
-      PACKAGE_NAME:
+      # Pyrus task ID
+      PYRUS_TASK_ID:
         type: string
         required: true
-      ISSUE_TITLE:
+      COMMENT_TEXT:
         type: string
         required: true
-      ISSUE_BODY:
-        type: string
-        required: true
-      ISSUE_LINK:
-        type: string
-        required: true
+    # Authentication data for Pyrus bot which will add comments to the task
     secrets:
       LOGIN:
         required: true
@@ -22,25 +18,30 @@ on:
         required: true
 
 jobs:
-  create_pyrus_task_from_issue:
-    name: Create Pyrus task from issue
+  add_comment_to_pyrus_task:
+    name: Add comment to Pyrus task
     runs-on: ubuntu-latest
     env:
       LOGIN: ${{ secrets.LOGIN }}
       SECURITY_KEY: ${{ secrets.SECURITY_KEY }}
     steps:
-      - name: Authorization with receiving a token
+      - name: Check if COMMENT_TEXT is not empty
+        run: |
+          if [[ -z "${{ inputs.COMMENT_TEXT }}" ]]; then
+            echo "Comment with Pyrus task link does not exist or empty."
+            exit 1
+          fi
+      - name: Authentication with receiving a token
         id: auth
         run: |
-          # Authorization with receiving a token
           response=$(curl -X POST \
           https://api.pyrus.com/v4/auth \
           -H 'Content-Type: application/json' \
           -d '{
-            "login": "'"$LOGIN"'",
-            "security_key": "'"$SECURITY_KEY"'"
-            }'
-          )
+              "login": "'"$LOGIN"'",
+              "security_key": "'"$SECURITY_KEY"'"
+              }'
+           )
 
           # Check for the absence of 'access_token' field in the response
           if ! echo "$response" | jq -e '.access_token' > /dev/null; then
@@ -51,40 +52,19 @@ jobs:
             echo "TOKEN=$token" >> $GITHUB_ENV
             echo "Token received successfully."
           fi
-      - name: Creating a task in Pyrus
-        id: create-task
+      - name: Add comment to Pyrus task
+        id: add_comment
         run: |
-          # Creating a task in Pyrus
           response=$(curl -X POST \
-          https://api.pyrus.com/v4/tasks \
+          https://api.pyrus.com/v4/tasks/${{ inputs.PYRUS_TASK_ID }}/comments \
           -H 'Content-Type: application/json' \
           -H "Authorization: Bearer $TOKEN" \
-          -d '{
-            "form_id": "1377048",
-            "fields": [
-              {
-                "id": "1",
-                "value": "${{ inputs.PACKAGE_NAME }}"
-              },
-              {
-                "id": "3",
-                "value": "${{ inputs.ISSUE_TITLE }}"
-              },
-              {
-                "id": "4",
-                "value": "${{ inputs.ISSUE_BODY }}"
-              },
-              {
-                "id": "5",
-                "value": "${{ inputs.ISSUE_LINK }}"
-              }
-            ]
-          }')
+          -d '{ "text": "${{ inputs.COMMENT_TEXT }}" }')
 
           # Check for the absence of 'task' field in the response
           if ! echo "$response" | jq -e '.task' > /dev/null; then
             echo "Error in API request. Response: $response"
             exit 1
           else
-            echo "Task created successfully."
+            echo "Comment was added successfully."
           fi
