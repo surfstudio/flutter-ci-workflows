@@ -26,4 +26,3 @@ jobs:
           issue-number: ${{ inputs.ISSUE_NUMBER }}
           body: ${{ inputs.COMMENT_TEXT }}
           reactions: ${{ inputs.REACTIONS }}
-
