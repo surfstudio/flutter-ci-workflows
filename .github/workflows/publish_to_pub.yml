@@ -102,10 +102,17 @@ jobs:
       - name: Set up Dart
         uses: dart-lang/setup-dart@v1.6.2
 
-      - name: Install Flutter
-        uses: ./.github/workflows/install_flutter.yml
+      - name: Install Flutter with exact version
+        if: ${{ inputs.FLUTTER_VERSION != ''}}
+        uses: subosito/flutter-action@v2
         with:
-          FLUTTER_VERSION: ${{ inputs.FLUTTER_VERSION }}
+          flutter-version: ${{ inputs.FLUTTER_VERSION }}
+
+      - name: Install Flutter from Stable branch
+        if: ${{ inputs.FLUTTER_VERSION == ''}}
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
 
       - name: Install dependencies
         run: flutter pub get
