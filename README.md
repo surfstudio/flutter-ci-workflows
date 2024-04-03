@@ -9,6 +9,7 @@ Repository for storing reusable workflows and workflows for repositories. Also w
 
 `.github/workflow` – reusable workflows
 `.github/repository_workflows_and_templates` – workflows and templates for repositories, when starting a project you just need to copy the contents to your `.github` folder
+`.github/workflows_archive` – reusable workflows that have been used in the past and may be useful in the future
 
 Descriptions of how workflows work can be found in Confluence.
 
