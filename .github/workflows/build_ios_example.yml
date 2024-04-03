@@ -22,7 +22,7 @@ jobs:
         with:
           flutter-version: ${{ inputs.FLUTTER_VERSION }}
 
-      - name: Install Flutter from Stable branch
+      - name: Install Flutter from stable branch
         if: ${{ inputs.FLUTTER_VERSION == ''}}
         uses: subosito/flutter-action@v2
         with:
