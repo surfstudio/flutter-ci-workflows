@@ -18,7 +18,7 @@ on:
         required: true
     outputs:
       # Pyrus task ID which was created
-      TASK_ID:
+      PYRUS_TASK_ID:
         value: ${{ jobs.create_pyrus_task.outputs.pyrus_task_id }}
     # Authentication data for Pyrus bot which will create tasks
     secrets:
@@ -41,6 +41,7 @@ jobs:
       - name: Authentication with receiving a token
         id: auth
         run: |
+          # Authentication with receiving a token
           response=$(curl -X POST \
           https://api.pyrus.com/v4/auth \
           -H 'Content-Type: application/json' \
@@ -63,6 +64,7 @@ jobs:
       - name: Creating a Pyrus task
         id: create_task
         run: |
+          # Creating a Pyrus task
           escaped_title=$(echo -n $title | jq -Rs)
 
           response=$(curl -X POST \
