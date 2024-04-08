@@ -46,8 +46,8 @@ jobs:
           https://api.pyrus.com/v4/auth \
           -H 'Content-Type: application/json' \
           -d '{
-            "login": "${{ env.login }}",
-            "security_key": "${{ env.security_key }}"
+              "login": "${{ env.login }}",
+              "security_key": "${{ env.security_key }}"
             }'
           )
 
@@ -70,7 +70,7 @@ jobs:
           response=$(curl -X POST \
           https://api.pyrus.com/v4/tasks \
           -H 'Content-Type: application/json' \
-          -H 'Authorization: Bearer $pyrus_token' \
+          -H "Authorization: Bearer $pyrus_token" \
           -d '{
             "form_id": "1377048",
             "fields": [
