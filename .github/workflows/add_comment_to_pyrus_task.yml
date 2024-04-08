@@ -1,0 +1,73 @@
+name: Add comment to Pyrus task
+
+on:
+  workflow_call:
+    inputs:
+      # Pyrus task ID
+      PYRUS_TASK_ID:
+        type: string
+        required: true
+      COMMENT_TEXT:
+        type: string
+        required: true
+    # Authentication data for Pyrus bot which will add comments to the task
+    secrets:
+      LOGIN:
+        required: true
+      SECURITY_KEY:
+        required: true
+
+jobs:
+  add_comment_to_pyrus_task:
+    name: Add comment to Pyrus task
+    runs-on: ubuntu-latest
+    env:
+      login: ${{ secrets.LOGIN }}
+      security_key: ${{ secrets.SECURITY_KEY }}
+      comment_text: ${{ inputs.COMMENT_TEXT }}
+    steps:
+      - name: Check if COMMENT_TEXT is not empty
+        run: |
+          if [[ -z "$comment_text" ]]; then
+            echo "Comment with Pyrus task link does not exist or empty."
+            exit 1
+          fi
+      - name: Authentication with receiving a token
+        id: auth
+        run: |
+          response=$(curl -X POST \
+          https://api.pyrus.com/v4/auth \
+          -H 'Content-Type: application/json' \
+          -d '{
+                "login": "${{ env.login }}",
+                "security_key": "${{ env.security_key }}"
+              }'
+           )
+
+          # Check for the absence of 'access_token' field in the response
+          if ! echo "$response" | jq -e '.access_token' > /dev/null; then
+            echo "Error in API request. Response: $response"
+            exit 1
+          else
+            token=$(echo "$response" | jq -r '.access_token')
+            echo "pyrus_token=$token" >> $GITHUB_ENV
+            echo "Token received successfully."
+          fi
+      - name: Add comment to Pyrus task
+        id: add_comment
+        run: |
+          escaped_comment_text=$(echo -n $comment_text | jq -Rs)
+
+          response=$(curl -X POST \
+          https://api.pyrus.com/v4/tasks/${{ inputs.PYRUS_TASK_ID }}/comments \
+          -H 'Content-Type: application/json' \
+          -H "Authorization: Bearer $pyrus_token" \
+          -d '{ "text": '"$escaped_comment_text"' }')
+
+          # Check for the absence of 'task' field in the response
+          if ! echo "$response" | jq -e '.task' > /dev/null; then
+            echo "Error in API request. Response: $response"
+            exit 1
+          else
+            echo "Comment was added successfully."
+          fi

@@ -1,4 +1,4 @@
-name: "Publish to pub.dev"
+name: Publish to pub.dev
 
 env:
   PUBSPEC_PATH: "./pubspec.yaml"
@@ -10,8 +10,8 @@ on:
       PANA_TOTAL:
         type: string
         required: true
-      # (optional) you can specify which version of Flutter will be used for Analysis workflow, defaults is the latest release from stable channel
-      flutter-version:
+      # (optional) you can specify which version of Flutter will be used, defaults is the latest release from stable channel
+      FLUTTER_VERSION:
         required: false
         type: string
     secrets:
@@ -86,7 +86,7 @@ jobs:
           echo "::error::The versions don't match!"
           exit 1
 
-      - name: Compare versions succes
+      - name: Compare versions success
         run: |
           echo "TAG: ${{ env.TAG }}"
           echo "CHANGELOG: ${{ env.CHANGELOG_VERSION }}"
@@ -103,13 +103,13 @@ jobs:
         uses: dart-lang/setup-dart@v1.6.2
 
       - name: Install Flutter with exact version
-        if: ${{ inputs.flutter-version != ''}}
+        if: ${{ inputs.FLUTTER_VERSION != ''}}
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: ${{ inputs.flutter-version }}
+          flutter-version: ${{ inputs.FLUTTER_VERSION }}
 
-      - name: Install Flutter from Stable branch
-        if: ${{ inputs.flutter-version == ''}}
+      - name: Install Flutter from stable branch
+        if: ${{ inputs.FLUTTER_VERSION == ''}}
         uses: subosito/flutter-action@v2
         with:
           channel: "stable"

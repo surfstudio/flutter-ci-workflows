@@ -1,20 +1,26 @@
-name: "Create Pyrus task from issue"
+name: Create Pyrus task from issue or PR
 
 on:
   workflow_call:
     inputs:
+      # Issue or PR
+      TYPE:
+        type: string
+        required: true
       PACKAGE_NAME:
         type: string
         required: true
-      ISSUE_TITLE:
+      TITLE:
         type: string
         required: true
-      ISSUE_BODY:
+      LINK:
         type: string
         required: true
-      ISSUE_LINK:
-        type: string
-        required: true
+    outputs:
+      # Pyrus task ID which was created
+      TASK_ID:
+        value: ${{ jobs.create_pyrus_task.outputs.pyrus_task_id }}
+    # Authentication data for Pyrus bot which will create tasks
     secrets:
       LOGIN:
         required: true
@@ -22,23 +28,25 @@ on:
         required: true
 
 jobs:
-  create_pyrus_task_from_issue:
-    name: Create Pyrus task from issue
+  create_pyrus_task:
+    name: Create Pyrus task from issue or PR
     runs-on: ubuntu-latest
+    outputs:
+      pyrus_task_id: ${{ steps.create_task.outputs.task_id }}
     env:
-      LOGIN: ${{ secrets.LOGIN }}
-      SECURITY_KEY: ${{ secrets.SECURITY_KEY }}
+      title: ${{ github.event.inputs.TITLE }}
+      login: ${{ secrets.LOGIN }}
+      security_key: ${{ secrets.SECURITY_KEY }}
     steps:
-      - name: Authorization with receiving a token
+      - name: Authentication with receiving a token
         id: auth
         run: |
-          # Authorization with receiving a token
           response=$(curl -X POST \
           https://api.pyrus.com/v4/auth \
           -H 'Content-Type: application/json' \
           -d '{
-            "login": "'"$LOGIN"'",
-            "security_key": "'"$SECURITY_KEY"'"
+            "login": "${{ env.login }}",
+            "security_key": "${{ env.security_key }}"
             }'
           )
 
@@ -48,35 +56,37 @@ jobs:
             exit 1
           else
             token=$(echo "$response" | jq -r '.access_token')
-            echo "TOKEN=$token" >> $GITHUB_ENV
+            echo "pyrus_token=$token" >> $GITHUB_ENV
             echo "Token received successfully."
           fi
-      - name: Creating a task in Pyrus
-        id: create-task
+
+      - name: Creating a Pyrus task
+        id: create_task
         run: |
-          # Creating a task in Pyrus
+          escaped_title=$(echo -n $title | jq -Rs)
+
           response=$(curl -X POST \
           https://api.pyrus.com/v4/tasks \
           -H 'Content-Type: application/json' \
-          -H "Authorization: Bearer $TOKEN" \
+          -H 'Authorization: Bearer $pyrus_token' \
           -d '{
             "form_id": "1377048",
             "fields": [
+              {
+                "id": "9",
+                "value": "${{ inputs.TYPE }}"
+              },
               {
                 "id": "1",
                 "value": "${{ inputs.PACKAGE_NAME }}"
               },
               {
                 "id": "3",
-                "value": "${{ inputs.ISSUE_TITLE }}"
-              },
-              {
-                "id": "4",
-                "value": "${{ inputs.ISSUE_BODY }}"
+                "value": '"$escaped_title"'
               },
               {
                 "id": "5",
-                "value": "${{ inputs.ISSUE_LINK }}"
+                "value": "${{ inputs.LINK }}"
               }
             ]
           }')
@@ -86,5 +96,7 @@ jobs:
             echo "Error in API request. Response: $response"
             exit 1
           else
+            id=$(echo "$response" | jq -r '.task.id')
+            echo "task_id=$id" >> $GITHUB_OUTPUT
             echo "Task created successfully."
           fi

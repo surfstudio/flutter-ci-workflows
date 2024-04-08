@@ -1,0 +1,23 @@
+name: Get package name
+
+on:
+  workflow_call:
+    outputs:
+      PACKAGE_NAME:
+        value: ${{ jobs.get_package_name.outputs.package_name }}
+
+jobs:
+  get_package_name:
+    name: Get package name
+    runs-on: ubuntu-latest
+    outputs:
+      package_name: ${{ steps.parse_pubspec.outputs.name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Parsing pubspec.yaml
+        id: parse_pubspec
+        uses: actions-tools/yaml-outputs@v2
+        with:
+          file-path: 'pubspec.yaml'
