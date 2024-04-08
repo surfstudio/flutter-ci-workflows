@@ -22,12 +22,13 @@ jobs:
     name: Add comment to Pyrus task
     runs-on: ubuntu-latest
     env:
-      LOGIN: ${{ secrets.LOGIN }}
-      SECURITY_KEY: ${{ secrets.SECURITY_KEY }}
+      login: ${{ secrets.LOGIN }}
+      security_key: ${{ secrets.SECURITY_KEY }}
+      comment_text: ${{ inputs.COMMENT_TEXT }}
     steps:
       - name: Check if COMMENT_TEXT is not empty
         run: |
-          if [[ -z "${{ inputs.COMMENT_TEXT }}" ]]; then
+          if [[ -z "$comment_text" ]]; then
             echo "Comment with Pyrus task link does not exist or empty."
             exit 1
           fi
@@ -38,8 +39,8 @@ jobs:
           https://api.pyrus.com/v4/auth \
           -H 'Content-Type: application/json' \
           -d '{
-              "login": "'"$LOGIN"'",
-              "security_key": "'"$SECURITY_KEY"'"
+                "login": "${{ env.login }}",
+                "security_key": "${{ env.security_key }}"
               }'
            )
 
@@ -49,17 +50,19 @@ jobs:
             exit 1
           else
             token=$(echo "$response" | jq -r '.access_token')
-            echo "TOKEN=$token" >> $GITHUB_ENV
+            echo "pyrus_token=$token" >> $GITHUB_ENV
             echo "Token received successfully."
           fi
       - name: Add comment to Pyrus task
         id: add_comment
         run: |
+          escaped_comment_text=$(echo -n $comment_text | jq -Rs)
+
           response=$(curl -X POST \
           https://api.pyrus.com/v4/tasks/${{ inputs.PYRUS_TASK_ID }}/comments \
           -H 'Content-Type: application/json' \
-          -H "Authorization: Bearer $TOKEN" \
-          -d '{ "text": "${{ inputs.COMMENT_TEXT }}" }')
+          -H "Authorization: Bearer $pyrus_token" \
+          -d '{ "text": '"$escaped_comment_text"' }')
 
           # Check for the absence of 'task' field in the response
           if ! echo "$response" | jq -e '.task' > /dev/null; then
