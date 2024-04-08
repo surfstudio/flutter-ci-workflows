@@ -34,9 +34,9 @@ jobs:
     outputs:
       pyrus_task_id: ${{ steps.create_task.outputs.task_id }}
     env:
-      title: ${{ github.event.inputs.TITLE }}
       login: ${{ secrets.LOGIN }}
       security_key: ${{ secrets.SECURITY_KEY }}
+      title: ${{ inputs.TITLE }}
     steps:
       - name: Authentication with receiving a token
         id: auth
