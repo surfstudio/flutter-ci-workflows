@@ -25,14 +25,14 @@ jobs:
         uses: actions/setup-java@v4
         if: ${{ inputs.JAVA_VERSION != ''}}
         with:
-          distribution: 'temurin'
+          distribution: 'oracle'
           java-version: ${{ inputs.JAVA_VERSION }}
 
       - name: Install default Java 12
         uses: actions/setup-java@v4
         if: ${{ inputs.JAVA_VERSION == ''}}
         with:
-          distribution: 'temurin'
+          distribution: 'oracle'
           java-version: '12'
 
       - name: Install Flutter with exact version
